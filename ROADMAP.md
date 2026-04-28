@@ -46,7 +46,7 @@ Phases 1–5 are complete. This document tracks remaining work.
 
 ---
 
-## Phase 6: GitHub Setup & Collaboration
+## Phase 6: GitHub Setup & Collaboration ✅
 
 **Focus:** Codebase management and version control.
 
@@ -62,24 +62,57 @@ Phases 1–5 are complete. This document tracks remaining work.
 
 ---
 
-## Phase 7: UI Revamp
-
-**Focus:** Visual redesign and improved user experience.
-
-- Redesign UI using **Lovable** (handled externally).
-- No backend or business-logic changes in this phase.
-- Proceed to Phase 8 once the UI is finalized.
-
----
-
-## Phase 8: Collaborator Contributions (Magic-Link Uploads)
+## Phase 7: Collaborator Contributions (Magic-Link Uploads) ✅
 
 **Focus:** Social and collaborative features.
 
-- Invited collaborators upload photos/videos via **magic link** (no account).
-- Owner receives notifications for new submissions.
-- Owner can **accept** or **decline** each contribution (moderation control).
-- Maintain seamless UX across invite → upload → review.
+- Owner generates per-email invite links from the trip dashboard. Tokens are
+  one-shot (32-byte url-safe), stored only as `sha256` hashes in the new
+  `collabInvites` collection, and shown to the owner exactly once at creation.
+- Invites expire after 30 days; owners can also revoke them. Expiry is
+  enforced server-side and the status is auto-flipped to `expired` on access.
+- Public `/contribute/:token` page (no auth) shows the trip context, requires
+  the guest to enter their name, and lets them upload photos/videos via the
+  same presign/confirm flow as the owner.
+- Guest uploads land with `status="pending-review"` and `source="collaborator"`,
+  store `guestName` / `guestEmail` / `inviteId`, and count against the trip
+  owner's storage quota.
+- Pending submissions are hidden from the gallery and shown in a new
+  **Pending contributions** panel on the dashboard with accept / decline
+  actions. Decline frees the S3 object immediately.
+- The trip GET response includes a `pendingCount` so the dashboard can show
+  an in-app badge when new submissions arrive (in-app only — no email infra).
+
+---
+
+## Phase 8: Reel Generator (Auto Storytelling) ✅
+
+**Focus:** Short highlight reels rendered server-side from trip media.
+
+- v1 supports a **manual** selection of up to 30 photos and/or videos per reel.
+- Two styles: **classic** (3 s per photo, 5 s max per video, 0.5 s crossfade
+  transitions) and **punchy** (1.5 s / 2.5 s, hard cuts).
+- Bundled royalty-free music tracks live in
+  `server/app/assets/music/`. Track id = filename (no extension); the picker
+  scans the directory at request time. "No music" produces a silent reel.
+- Output: 1280×720 / 30 fps / H.264 + AAC mp4, faststart-muxed for in-browser
+  playback. A 1.5 s audio fade-out is applied at the tail when music is used.
+- **Renderer**: a single `ffmpeg` invocation per reel. Each input is normalized
+  via `scale=...:force_original_aspect_ratio=decrease,pad=...,setsar=1,fps=30,format=yuv420p`,
+  then either `concat`ed (punchy) or chained through `xfade` (classic). Photos
+  use `-loop 1 -t <dur>`; videos are trimmed with `-t <max>`.
+- **Job system**: in-process `threading.Thread` spawned from the create
+  endpoint. State machine `queued → rendering → ready | failed`. The frontend
+  polls every 3 s while any reel is in flight (React Query `refetchInterval`).
+- **Storage**: rendered mp4s upload back to S3 under
+  `users/<owner>/trips/<trip>/reels/<reelId>.mp4`; `GET /api/trips/:id/reels`
+  returns presigned download URLs.
+- **Endpoints**: `GET/POST /api/trips/:id/reels`, `GET/DELETE /api/reels/:id`,
+  `GET /api/reels/music`. FFmpeg presence is checked up front so missing
+  binaries return a clear 500 rather than a slow async failure.
+- **UI**: a **Reels** section on the trip dashboard listing every reel with
+  status badge, in-page video player (when ready), and a "+ New reel" modal
+  for ordered media selection, style choice, and music dropdown.
 
 ---
 
@@ -93,11 +126,20 @@ Phases 1–5 are complete. This document tracks remaining work.
 
 ---
 
-## Phase 10: Final Polish & Deployment
+## Phase 10: Public Moodboard
 
+## Phase 11: Print Hand Book
+
+## Phase 12: UI revamp
+
+## Phase 13: Final debugging + Deployment
 **Focus:** Production readiness.
 
 - End-to-end testing (UI + backend).
 - Fix edge cases and performance issues.
 - Optimize load times and media handling.
 - Deploy application to production environment.
+
+## Phase 14: Prisma + Sonar Qube + Git Actions
+
+## Phase 15: Redis 

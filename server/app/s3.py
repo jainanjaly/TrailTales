@@ -112,3 +112,18 @@ def delete_object(key: str) -> None:
         _client().delete_object(Bucket=_bucket(), Key=key)
     except (ClientError, BotoCoreError) as e:
         log.warning("delete_object failed for %s: %s", key, e)
+
+
+def download_to(key: str, dest_path: str) -> None:
+    """Download an S3 object to a local path. Raises on failure."""
+    _client().download_file(_bucket(), key, dest_path)
+
+
+def upload_file(local_path: str, key: str, content_type: str) -> None:
+    """Upload a local file to S3. Raises on failure."""
+    _client().upload_file(
+        local_path,
+        _bucket(),
+        key,
+        ExtraArgs={"ContentType": content_type},
+    )

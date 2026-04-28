@@ -139,7 +139,16 @@ def get_trip(trip_id: str):
     trip = _owned_trip_or_none(trip_id, user_id)
     if trip is None:
         return error("Trip not found", 404)
-    return jsonify({"trip": _serialize_trip(trip)})
+    out = _serialize_trip(trip)
+    if out is not None:
+        out["pendingCount"] = get_db().media.count_documents(
+            {
+                "tripId": trip["_id"],
+                "ownerId": ObjectId(user_id),
+                "status": "pending-review",
+            }
+        )
+    return jsonify({"trip": out})
 
 
 @bp.patch("/<trip_id>")
