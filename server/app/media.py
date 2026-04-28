@@ -178,7 +178,7 @@ def list_media(trip_id: str):
             {
                 "tripId": trip["_id"],
                 "ownerId": ObjectId(user_id),
-                "status": {"$in": ["accepted", "pending-review"]},
+                "status": "accepted",
             }
         )
         .sort("createdAt", -1)
