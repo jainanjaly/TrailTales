@@ -36,5 +36,6 @@ def init_db(app: Flask) -> None:
                 [("tripId", ASCENDING), ("date", ASCENDING)]
             )
             db.collabInvites.create_index([("tokenHash", ASCENDING)], unique=True)
+            db.reels.create_index([("tripId", ASCENDING)])
         except PyMongoError as e:
             log.warning("Skipping index creation; Mongo not reachable yet: %s", e)

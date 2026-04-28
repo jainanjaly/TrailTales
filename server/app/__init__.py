@@ -34,6 +34,7 @@ def create_app() -> Flask:
     from .collab import bp_invites, bp_moderation, bp_public
     from .expenses import bp as expenses_bp
     from .media import bp_media, bp_trip as media_trip_bp
+    from .reels import bp_reel, bp_trip as reels_trip_bp
     from .timeline import bp as timeline_bp
     from .trips import bp as trips_bp
 
@@ -46,6 +47,8 @@ def create_app() -> Flask:
     app.register_blueprint(bp_invites)
     app.register_blueprint(bp_public)
     app.register_blueprint(bp_moderation)
+    app.register_blueprint(reels_trip_bp)
+    app.register_blueprint(bp_reel)
 
     # Health check
     @app.get("/api/health")

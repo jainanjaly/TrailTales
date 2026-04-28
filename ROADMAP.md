@@ -85,16 +85,34 @@ Phases 1–5 are complete. This document tracks remaining work.
 
 ---
 
-## Phase 8: Reel Generator (Auto Storytelling)
-Generate short highlight reels from trip media (photos/videos)
-Manual + auto media selection
-Multiple travel-themed reel styles (cinematic, adventure, timeline)
-Background music selection
-Automated editing pipeline (transitions, trimming, filters)
-Preview with lightweight editing (reorder, remove, regenerate)
-Export as downloadable/shareable video
-Backend processing via FFmpeg + async job system
-Store generated reels in S3 with metadata
+## Phase 8: Reel Generator (Auto Storytelling) ✅
+
+**Focus:** Short highlight reels rendered server-side from trip media.
+
+- v1 supports a **manual** selection of up to 30 photos and/or videos per reel.
+- Two styles: **classic** (3 s per photo, 5 s max per video, 0.5 s crossfade
+  transitions) and **punchy** (1.5 s / 2.5 s, hard cuts).
+- Bundled royalty-free music tracks live in
+  `server/app/assets/music/`. Track id = filename (no extension); the picker
+  scans the directory at request time. "No music" produces a silent reel.
+- Output: 1280×720 / 30 fps / H.264 + AAC mp4, faststart-muxed for in-browser
+  playback. A 1.5 s audio fade-out is applied at the tail when music is used.
+- **Renderer**: a single `ffmpeg` invocation per reel. Each input is normalized
+  via `scale=...:force_original_aspect_ratio=decrease,pad=...,setsar=1,fps=30,format=yuv420p`,
+  then either `concat`ed (punchy) or chained through `xfade` (classic). Photos
+  use `-loop 1 -t <dur>`; videos are trimmed with `-t <max>`.
+- **Job system**: in-process `threading.Thread` spawned from the create
+  endpoint. State machine `queued → rendering → ready | failed`. The frontend
+  polls every 3 s while any reel is in flight (React Query `refetchInterval`).
+- **Storage**: rendered mp4s upload back to S3 under
+  `users/<owner>/trips/<trip>/reels/<reelId>.mp4`; `GET /api/trips/:id/reels`
+  returns presigned download URLs.
+- **Endpoints**: `GET/POST /api/trips/:id/reels`, `GET/DELETE /api/reels/:id`,
+  `GET /api/reels/music`. FFmpeg presence is checked up front so missing
+  binaries return a clear 500 rather than a slow async failure.
+- **UI**: a **Reels** section on the trip dashboard listing every reel with
+  status badge, in-page video player (when ready), and a "+ New reel" modal
+  for ordered media selection, style choice, and music dropdown.
 
 ---
 
@@ -108,13 +126,13 @@ Store generated reels in S3 with metadata
 
 ---
 
-## Phase 10: Pulic Moodboard
+## Phase 10: Public Moodboard
 
 ## Phase 11: Print Hand Book
 
-# Phase 12: UI revamp
+## Phase 12: UI revamp
 
-# Phase 13: Final debuggin + Deployment
+## Phase 13: Final debugging + Deployment
 **Focus:** Production readiness.
 
 - End-to-end testing (UI + backend).
@@ -122,4 +140,6 @@ Store generated reels in S3 with metadata
 - Optimize load times and media handling.
 - Deploy application to production environment.
 
-# Phase 14: Prisma + Sonar Qube + Git Actions
+## Phase 14: Prisma + Sonar Qube + Git Actions
+
+## Phase 15: Redis 

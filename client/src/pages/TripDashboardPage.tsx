@@ -3,6 +3,7 @@ import ExpensePanel from "../components/ExpensePanel";
 import Gallery from "../components/Gallery";
 import InvitePanel from "../components/InvitePanel";
 import PendingPanel from "../components/PendingPanel";
+import ReelPanel from "../components/ReelPanel";
 import TimelinePanel from "../components/TimelinePanel";
 import UploadDropzone from "../components/UploadDropzone";
 import { apiErrorMessage } from "../lib/api";
@@ -112,6 +113,10 @@ export default function TripDashboardPage() {
       <section style={placeholderCard}>
         <h3 style={{ margin: 0 }}>Timeline</h3>
         <TimelinePanel tripId={trip.id} />
+      </section>
+      <section style={placeholderCard}>
+        <h3 style={{ margin: 0 }}>Reels</h3>
+        <ReelPanel tripId={trip.id} media={media} />
       </section>
       <section style={placeholderCard}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
