@@ -18,6 +18,7 @@ export type Trip = {
   defaultCurrency: string;
   coverMediaId: string | null;
   createdAt: string;
+  pendingCount?: number;
 };
 
 export type TripInput = {

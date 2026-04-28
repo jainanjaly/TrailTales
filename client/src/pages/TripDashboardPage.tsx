@@ -1,6 +1,8 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ExpensePanel from "../components/ExpensePanel";
 import Gallery from "../components/Gallery";
+import InvitePanel from "../components/InvitePanel";
+import PendingPanel from "../components/PendingPanel";
 import TimelinePanel from "../components/TimelinePanel";
 import UploadDropzone from "../components/UploadDropzone";
 import { apiErrorMessage } from "../lib/api";
@@ -111,6 +113,25 @@ export default function TripDashboardPage() {
         <h3 style={{ margin: 0 }}>Timeline</h3>
         <TimelinePanel tripId={trip.id} />
       </section>
+      <section style={placeholderCard}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <h3 style={{ margin: 0 }}>
+            Pending contributions
+            {trip.pendingCount && trip.pendingCount > 0 ? (
+              <span style={badge}>{trip.pendingCount}</span>
+            ) : null}
+          </h3>
+        </div>
+        <PendingPanel tripId={trip.id} />
+      </section>
+      <section style={placeholderCard}>
+        <h3 style={{ margin: 0 }}>Invite collaborators</h3>
+        <p style={{ margin: 0, fontSize: 13, color: "#6b7280" }}>
+          Generate a magic link for a guest to upload photos and videos. No
+          account required for them. Links expire after 30 days.
+        </p>
+        <InvitePanel tripId={trip.id} />
+      </section>
     </div>
   );
 }
@@ -137,4 +158,15 @@ const deleteBtn: React.CSSProperties = {
   background: "white",
   color: "#b91c1c",
   cursor: "pointer",
+};
+const badge: React.CSSProperties = {
+  display: "inline-block",
+  marginLeft: 8,
+  padding: "2px 8px",
+  borderRadius: 999,
+  background: "#fde68a",
+  color: "#92400e",
+  fontSize: 12,
+  fontWeight: 700,
+  verticalAlign: "middle",
 };

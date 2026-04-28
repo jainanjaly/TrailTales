@@ -46,7 +46,7 @@ Phases 1–5 are complete. This document tracks remaining work.
 
 ---
 
-## Phase 6: GitHub Setup & Collaboration
+## Phase 6: GitHub Setup & Collaboration ✅
 
 **Focus:** Codebase management and version control.
 
@@ -62,24 +62,39 @@ Phases 1–5 are complete. This document tracks remaining work.
 
 ---
 
-## Phase 7: UI Revamp
-
-**Focus:** Visual redesign and improved user experience.
-
-- Redesign UI using **Lovable** (handled externally).
-- No backend or business-logic changes in this phase.
-- Proceed to Phase 8 once the UI is finalized.
-
----
-
-## Phase 8: Collaborator Contributions (Magic-Link Uploads)
+## Phase 7: Collaborator Contributions (Magic-Link Uploads) ✅
 
 **Focus:** Social and collaborative features.
 
-- Invited collaborators upload photos/videos via **magic link** (no account).
-- Owner receives notifications for new submissions.
-- Owner can **accept** or **decline** each contribution (moderation control).
-- Maintain seamless UX across invite → upload → review.
+- Owner generates per-email invite links from the trip dashboard. Tokens are
+  one-shot (32-byte url-safe), stored only as `sha256` hashes in the new
+  `collabInvites` collection, and shown to the owner exactly once at creation.
+- Invites expire after 30 days; owners can also revoke them. Expiry is
+  enforced server-side and the status is auto-flipped to `expired` on access.
+- Public `/contribute/:token` page (no auth) shows the trip context, requires
+  the guest to enter their name, and lets them upload photos/videos via the
+  same presign/confirm flow as the owner.
+- Guest uploads land with `status="pending-review"` and `source="collaborator"`,
+  store `guestName` / `guestEmail` / `inviteId`, and count against the trip
+  owner's storage quota.
+- Pending submissions are hidden from the gallery and shown in a new
+  **Pending contributions** panel on the dashboard with accept / decline
+  actions. Decline frees the S3 object immediately.
+- The trip GET response includes a `pendingCount` so the dashboard can show
+  an in-app badge when new submissions arrive (in-app only — no email infra).
+
+---
+
+## Phase 8: Reel Generator (Auto Storytelling)
+Generate short highlight reels from trip media (photos/videos)
+Manual + auto media selection
+Multiple travel-themed reel styles (cinematic, adventure, timeline)
+Background music selection
+Automated editing pipeline (transitions, trimming, filters)
+Preview with lightweight editing (reorder, remove, regenerate)
+Export as downloadable/shareable video
+Backend processing via FFmpeg + async job system
+Store generated reels in S3 with metadata
 
 ---
 
@@ -93,11 +108,18 @@ Phases 1–5 are complete. This document tracks remaining work.
 
 ---
 
-## Phase 10: Final Polish & Deployment
+## Phase 10: Pulic Moodboard
 
+## Phase 11: Print Hand Book
+
+# Phase 12: UI revamp
+
+# Phase 13: Final debuggin + Deployment
 **Focus:** Production readiness.
 
 - End-to-end testing (UI + backend).
 - Fix edge cases and performance issues.
 - Optimize load times and media handling.
 - Deploy application to production environment.
+
+# Phase 14: Prisma + Sonar Qube + Git Actions
